@@ -36,3 +36,22 @@ jobs:
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+
+      # Step 6: SSH into EC2 instance and run the container
+      - name: SSH into EC2 and deploy container
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest"
+          target: "~/"
+
+      - name: SSH and restart container
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_PUBLIC_IP }} "
+          sudo docker stop pdp || true
+          sudo docker rm pdp || true
+          sudo docker run -d --name pdp -p 80:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+          "
+
