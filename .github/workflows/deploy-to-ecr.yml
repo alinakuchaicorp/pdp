@@ -29,13 +29,22 @@ jobs:
       # Step 4: Build and Tag Docker Image
       - name: Build Docker image
         run: |
-          docker build -t pdp .
-          docker tag pdp:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+          IMAGE_TAG=${{ github.sha }}
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+          # Build the Docker image with the version tag
+          docker build -t pdp:$IMAGE_TAG -t pdp:latest .
 
       # Step 5: Push Docker Image to ECR
       - name: Push Docker image to ECR
         run: |
+          # Push both the versioned and latest tags
+          docker tag pdp:${{ github.sha }} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:${{ github.sha }}
+          docker tag pdp:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:${{ github.sha }}
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+
 
       # Step 6: SSH into EC2 instance and run the container
       - name: Deploy Docker Container to EC2
@@ -57,5 +66,5 @@ jobs:
           sudo docker rm pdp || true
 
           # Run the new container
-          sudo docker run -d --name pdp -p 80:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+          sudo docker run -d --name pdp -p 8080:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
 
