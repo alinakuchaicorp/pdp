@@ -50,12 +50,12 @@ jobs:
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
           # Pull the latest image from ECR
-          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+          sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
 
           # Stop the existing container (if any)
-          docker stop pdp || true
-          docker rm pdp || true
+          sudo docker stop pdp || true
+          sudo docker rm pdp || true
 
           # Run the new container
-          docker run -d --name pdp -p 80:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+          sudo docker run -d --name pdp -p 80:80 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
 
