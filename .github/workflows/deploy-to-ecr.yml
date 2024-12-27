@@ -59,20 +59,20 @@ jobs:
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
               | sudo docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+            
+            # 2. Short pause to ensure credentials are registered
+            sleep 2
 
-           # 2. Short pause to ensure credentials are registered
-           sleep 2
+            # 3. Remove any local copy of the image named :latest (optional but recommended)
+            sudo docker rmi ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest || true
 
-           # 3. Remove any local copy of the image named :latest (optional but recommended)
-           sudo docker rmi ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest || true
+            # 4. Pull the latest image from ECR
+            sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
 
-           # 4. Pull the latest image from ECR
-           sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+            # 5. Stop and remove the existing container (if any)
+            sudo docker stop pdp || true
+            sudo docker rm pdp || true
 
-           # 5. Stop and remove the existing container (if any)
-           sudo docker stop pdp || true
-           sudo docker rm pdp || true
-
-           # 6. Run the container with the newly pulled image
-           sudo docker run -d --name pdp -p 8080:80 \
-             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
+            # 6. Run the container with the newly pulled image
+            sudo docker run -d --name pdp -p 8080:80 \
+              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
