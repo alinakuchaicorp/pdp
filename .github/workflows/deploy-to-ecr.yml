@@ -33,7 +33,7 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
           # Build the Docker image with the version tag
-          docker build -t pdp:$IMAGE_TAG -t pdp:latest .
+          docker build --no-cache -t pdp:$IMAGE_TAG -t pdp:latest .
 
       # Step 5: Push Docker Image to ECR
       - name: Push Docker image to ECR
