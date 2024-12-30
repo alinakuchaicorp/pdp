@@ -52,6 +52,7 @@ jobs:
           aws lambda invoke \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
             --region ${{ secrets.AWS_REGION }} \
+            --payload '{"IMAGE_TAG": "${{ github.sha }}"}' \
             response.json
 
           echo "Lambda response:"
