@@ -45,3 +45,12 @@ jobs:
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:${{ github.sha }}
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pdp:latest
 
+      # Step 6: Trigger Lambda Function
+      - name: Invoke AWS Lambda Deployment
+        run: |
+          aws lambda invoke \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --region ${{ secrets.AWS_REGION }} \
+            response.json
+          echo "Lambda response:"
+          cat response.json
